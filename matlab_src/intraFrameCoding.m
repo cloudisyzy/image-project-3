@@ -1,4 +1,4 @@
-function [average_Rate, average_PSNR] = rate_psnr_q1(file_path)
+function [average_rate_video, average_rate_pixel, average_PSNR, data, data_recon] = intraFrameCoding(file_path, Q_list)
 
     % QCIF: width=176; height=144
     w_frame = 176;
@@ -14,9 +14,10 @@ function [average_Rate, average_PSNR] = rate_psnr_q1(file_path)
     coeffs_per_block = w_block * h_block; % 16x16 block = 256 coefficients
     
     data = yuv_import_y(file_path, [w_frame, h_frame], n_frames);
-    Q_list = 2.^(3:6);
-    average_PSNR = zeros(length(Q_list),1);
-    average_Rate = zeros(length(Q_list),1);
+    average_PSNR = zeros(length(Q_list), 1);
+    average_rate_video = zeros(length(Q_list), 1);
+    average_rate_pixel = zeros(length(Q_list), 1);
+    data_recon = cell(length(Q_list), n_frames);
     
     for q_idx = 1:length(Q_list)
         Q = Q_list(q_idx);
@@ -71,6 +72,43 @@ function [average_Rate, average_PSNR] = rate_psnr_q1(file_path)
             % Compute Rate:
             % A different VLC (entropy model) for each coefficient index
             total_bits_this_frame = 0;
+
+            % Reconstruct the frame from quantized coefficients
+            % Inverse quantization is just the quantized value itself.
+            % Inverse DCT of each 8x8 block
+            recon_frame = zeros(h_frame, w_frame);
+            blk_count = 1;
+            for bh = 1:num_blocks_h
+                for bw = 1:num_blocks_w
+                    % Get quant block
+                    q_block_flat = quantized_coeffs_all(blk_count,:);
+                    q_block_16x16 = reshape(q_block_flat, [h_block, w_block]);
+                    
+                    % inverse DCT each 8x8
+                    recon_16x16 = zeros(h_block, w_block);
+                    for subrow = 1:2
+                        for subcol = 1:2
+                            r_start = (subrow-1)*8+1;
+                            r_end = subrow*8;
+                            c_start = (subcol-1)*8+1;
+                            c_end = subcol*8;
+                            q_sub_block = q_block_16x16(r_start:r_end, c_start:c_end);
+                            recon_sub_block = idct2(q_sub_block);
+                            recon_16x16(r_start:r_end, c_start:c_end) = recon_sub_block;
+                        end
+                    end
+                    
+                    row_start = (bh-1)*h_block + 1;
+                    row_end = bh*h_block;
+                    col_start = (bw-1)*w_block + 1;
+                    col_end = bw*w_block;
+                    recon_frame(row_start:row_end, col_start:col_end) = recon_16x16;
+                    blk_count = blk_count + 1;
+                end
+            end
+
+            data_recon{q_idx, f} = recon_frame;
+
             for coeff_idx = 1:coeffs_per_block
                 coeff_vector = quantized_coeffs_all(:, coeff_idx);
                 entropy = computeBitRate(coeff_vector);
@@ -78,11 +116,10 @@ function [average_Rate, average_PSNR] = rate_psnr_q1(file_path)
             end
             frame_bits(f) = total_bits_this_frame;
             
-            % Compute MSE in DCT domain:
-            % According to Parseval's theorem, energy is preserved.
-            % Hence MSE in DCT domain = MSE in spatial domain.
-            psnr_val = PSNR(original_coeffs_all, quantized_coeffs_all);
-            frame_PSNRs(f) = psnr_val;
+            % Compute PSNR using Parseval
+            frame_PSNRs(f) = PSNR(original_coeffs_all, quantized_coeffs_all);
+            % % Alternatively, compute PSNR directly
+            % frame_PSNRs(f) = PSNR(recon_frame, original_frame);
         end
         
         % Compute average PSNR over 50 frames
@@ -91,9 +128,11 @@ function [average_Rate, average_PSNR] = rate_psnr_q1(file_path)
         % Compute average bit-rate in kbit/s
         avg_bits_per_frame = mean(frame_bits);
         bitrate_kbps = (avg_bits_per_frame * 30) / 1000;
+        avg_bits_per_pix = avg_bits_per_frame / (w_frame * h_frame);
         
         average_PSNR(q_idx) = avg_psnr;
-        average_Rate(q_idx) = bitrate_kbps;
+        average_rate_video(q_idx) = bitrate_kbps;
+        average_rate_pixel(q_idx) = avg_bits_per_pix;
     end
 
 end
