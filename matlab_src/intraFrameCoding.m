@@ -69,10 +69,6 @@ function [average_rate_video, average_rate_pixel, average_PSNR, data, data_recon
                 end
             end
             
-            % Compute Rate:
-            % A different VLC (entropy model) for each coefficient index
-            total_bits_this_frame = 0;
-
             % Reconstruct the frame from quantized coefficients
             % Inverse quantization is just the quantized value itself.
             % Inverse DCT of each 8x8 block
@@ -108,6 +104,10 @@ function [average_rate_video, average_rate_pixel, average_PSNR, data, data_recon
             end
 
             data_recon{q_idx, f} = recon_frame;
+
+            % Compute Rate:
+            % A different VLC (entropy model) for each coefficient index
+            total_bits_this_frame = 0;
 
             for coeff_idx = 1:coeffs_per_block
                 coeff_vector = quantized_coeffs_all(:, coeff_idx);

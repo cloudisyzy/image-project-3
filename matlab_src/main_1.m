@@ -12,11 +12,14 @@ figure;
 plot(foreman_Rate, foreman_PSNR, '-o');
 hold on;
 plot(motherdaughter_Rate, motherdaughter_PSNR, '-o');
-legend('Foreman', 'Mother-Daughter');
-xlabel('Bit-rate (kbps)');
-ylabel('PSNR (dB)');
-title('Rate-PSNR Curve for Intra-Frame Video Coder');
+legend('Foreman', 'Mother-Daughter', 'Location', 'best', 'FontSize', 10);
+xlabel('Bit-rate (kbps)', 'FontSize', 12);
+ylabel('PSNR (dB)', 'FontSize', 12);
+title('Rate-PSNR Curve for Intra-Frame Video Coder', 'FontSize', 14);
 grid on;
+set(gca, 'FontSize', 10, 'GridAlpha', 0.3);
+axis tight;
+set(gcf, 'Color', 'w');
 
 
 
