@@ -1,7 +1,7 @@
-% clear;
+clear;
 
-file_path = '../foreman_qcif/foreman_qcif.yuv';
-% file_path = '../mother-daughter_qcif/mother-daughter_qcif.yuv';
+% file_path = '../foreman_qcif/foreman_qcif.yuv';
+file_path = '../mother-daughter_qcif/mother-daughter_qcif.yuv';
 Q_list = 2.^(3:6);
 [average_rate_video, average_rate_pixel, average_PSNR, data, data_recon] = intraFrameCoding(file_path, Q_list);
 
@@ -17,7 +17,7 @@ w_dct = 8;
 h_dct = 8; 
 coeffs_per_block = w_block * h_block;
 
-% Compute best displacements and residuals
+%% Compute best displacements and residuals
 
 disp_range = -10:10;
 frame_recon_mc = cell(length(Q_list), n_frames-1); % stores the reconstructed frame using montion compensation, this has slightly different meaning with `frame_recon_cr` in main_2.m
@@ -109,7 +109,7 @@ end
 average_residual_rate = mean(residual_rate, 2);
 
 
-% Mode selection
+%% Mode selection
 
 frame_recon = cell(length(Q_list), n_frames); % this has the same meaning with `frame_recon_cr` in main_2.m
 psnr_frame = zeros(length(Q_list), n_frames);

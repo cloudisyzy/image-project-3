@@ -1,7 +1,7 @@
 clear;
 
-file_path = '../foreman_qcif/foreman_qcif.yuv';
-% file_path = '../mother-daughter_qcif/mother-daughter_qcif.yuv';
+% file_path = '../foreman_qcif/foreman_qcif.yuv';
+file_path = '../mother-daughter_qcif/mother-daughter_qcif.yuv';
 Q_list = 2.^(3:6);
 [average_rate_video, average_rate_pixel, average_PSNR, data, data_recon] = intraFrameCoding(file_path, Q_list);
 
