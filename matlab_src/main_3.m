@@ -182,7 +182,7 @@ for i = 1 : length(Q_list) % each quantization step
 
 end
 
-rate_frame = sum(rate_video_block, [3, 4]);
+rate_frame = sum(sum(rate_video_block, 3), 4);
 average_rate_frame = mean(rate_frame, 2);
 mc_Rate = (average_rate_frame * 30) / 1000;
 mc_Distortion = mean(psnr_frame, 2);
