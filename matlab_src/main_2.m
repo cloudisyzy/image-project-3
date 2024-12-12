@@ -1,7 +1,7 @@
 clear;
 
-% file_path = '../foreman_qcif/foreman_qcif.yuv';
-file_path = '../mother-daughter_qcif/mother-daughter_qcif.yuv';
+file_path = '../foreman_qcif/foreman_qcif.yuv';
+% file_path = '../mother-daughter_qcif/mother-daughter_qcif.yuv';
 Q_list = 2.^(3:6);
 [average_rate_video, average_rate_pixel, average_PSNR, data, data_recon] = intraFrameCoding(file_path, Q_list);
 
@@ -48,14 +48,14 @@ for i = 1:length(Q_list)
                     
                     last_frame = frame_recon_cr{i, j-1}(rows, cols);
                     rate_copy = 1;
-                    distortion_copy = mse(correct_frame, last_frame);
+                    distortion_copy = mse_customize(correct_frame, last_frame);
                     % `rate_copy/coeffs_per_block` below because distortion is
                     % measured by mse (distortion per pixel), so rate must
                     % be (rate per pixel)
                     cost_copy = lagrangian(distortion_copy, rate_copy/coeffs_per_block, Q_list(i), 0.2);
 
                     rate_intra = average_rate_pixel(i) * coeffs_per_block + 1;
-                    distortion_intra = mse(correct_frame, data_recon{i, j}(rows, cols));
+                    distortion_intra = mse_customize(correct_frame, data_recon{i, j}(rows, cols));
                     cost_intra = lagrangian(distortion_intra, rate_intra/coeffs_per_block, Q_list(i), 0.2);
 
                     if cost_copy < cost_intra
@@ -99,4 +99,4 @@ axis tight;
 set(gcf, 'Color', 'w');
 
 figure;
-plot_bars(count_intra, count_copy, Q_list);
+plot_bars_2(count_intra, count_copy, Q_list);

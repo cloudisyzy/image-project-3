@@ -1,4 +1,4 @@
-function plot_bars(count_intra, count_copy, x_axis)
+function plot_bars_2(count_intra, count_copy, x_axis)
     if length(count_intra) ~= length(count_copy)
         error('count_intra and count_copy must have the same length.');
     end
